@@ -1,0 +1,41 @@
+name: todo
+services:
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        API_ENDPOINT: ${API_ENDPOINT}
+    container_name: frontend
+    restart: always
+    ports:
+    - 8080:80
+    depends_on:
+    - api
+  api:
+    build: ./api
+    container_name: api
+    restart: always
+    environment:
+    - DATABASE_HOST=mysql
+    - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+    - REDIS_HOST=redis
+    ports:
+    - 9000:9000
+    depends_on:
+    - mysql
+    - redis
+  mysql:
+    image: mysql
+    container_name: mysql
+    restart: always
+    volumes:
+    - mysql-data:/var/lib/mysql
+    - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    environment:
+    - MYSQL_ROOT_PASSWORD=${DATABASE_PASSWORD}
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+volumes:
+  mysql-data:
